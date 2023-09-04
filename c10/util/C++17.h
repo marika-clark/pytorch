@@ -159,7 +159,8 @@ struct function_takes_identity_argument : std::false_type {};
 template <class Func>
 struct function_takes_identity_argument<
     Func,
-    std::void_t<decltype(std::declval<Func>()(_identity()))>> : std::true_type {};
+    std::void_t<decltype(std::declval<Func>()(_identity()))>> : std::true_type {
+};
 } // namespace detail
 
 // GCC 4.8 doesn't define std::to_string, even though that's in C++11. Let's
