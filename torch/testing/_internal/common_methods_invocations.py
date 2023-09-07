@@ -987,7 +987,16 @@ def error_inputs_uniform(op, device, **kwargs):
 
 def error_inputs_linspace(op, device, **kwargs):
     yield ErrorInput(SampleInput(0, args=(3, -1)), error_type=RuntimeError, error_regex='number of steps must be non-negative')
-    yield ErrorInput(SampleInput(0, args=(3, 1.)), error_type=TypeError, error_regex='must be int, not float')
+    yield ErrorInput(
+        SampleInput(0, args=(3, 1.)),
+        error_type=TypeError,
+        error_regex="received an invalid combination of arguments - got \\(int, int, float",
+    )
+    yield ErrorInput(
+        SampleInput(torch.tensor([1, 1], device=device), args=(torch.tensor([3, 3], device=device), 1)),
+        error_type=RuntimeError,
+        error_regex="only supports 0-dimensional start and end tensors"
+    )
 
 
 def sample_inputs_linspace(op, device, dtype, requires_grad, **kwargs):
@@ -11319,6 +11328,8 @@ op_db: List[OpInfo] = [
            error_inputs_func=error_inputs_linspace,
            sample_inputs_func=sample_inputs_linspace,
            skips=(
+               # FX failed to normalize op - add the op to the op_skip list.
+               DecorateInfo(unittest.expectedFailure, 'TestNormalizeOperators', 'test_normalize_operator_exhaustive'),
                # Tests that assume input is a tensor or sequence of tensors
                DecorateInfo(unittest.expectedFailure, 'TestCommon', 'test_variant_consistency_eager'),
                DecorateInfo(unittest.expectedFailure, 'TestMathBits', 'test_neg_view'),
@@ -11385,6 +11396,8 @@ op_db: List[OpInfo] = [
            error_inputs_func=error_inputs_linspace,
            sample_inputs_func=sample_inputs_logspace,
            skips=(
+               # FX failed to normalize op - add the op to the op_skip list.
+               DecorateInfo(unittest.expectedFailure, 'TestNormalizeOperators', 'test_normalize_operator_exhaustive'),
                # Tests that assume input is a tensor or sequence of tensors
                DecorateInfo(unittest.expectedFailure, 'TestCommon', 'test_variant_consistency_eager'),
                DecorateInfo(unittest.expectedFailure, 'TestMathBits', 'test_neg_view'),
